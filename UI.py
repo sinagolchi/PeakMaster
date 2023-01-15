@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 #%%
 
-st.title('LC-MS/MS Peak table processing')
+st.title('LC-MS/MS Peak Table Processing')
 
 # with st.sidebar:
 #     demo = st.checkbox('Demo mode',value=True)
