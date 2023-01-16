@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 st.title('LC-MS/MS Peak Table Processing')
 with st.sidebar:
-    st.file_uploader('Dilution factors')
+    dilution_file = st.file_uploader('Dilution factors')
 
 # with st.sidebar:
 #     demo = st.checkbox('Demo mode',value=True)
@@ -229,7 +229,7 @@ if batch_file is not None:
     samples_set = process_file(batch_file)
     p_samples = process_sample(samples_set,calibrated)
     df_concs = make_sample_df(p_samples)
-    df_concs2 = df_concs*pd.read_csv('dilution_factors.csv',index_col='Points')
+    df_concs2 = df_concs*pd.read_csv(dilution_file,index_col='Points')
     with sample_tab:
         st.dataframe(df_concs2)
     st.download_button('Download results',data=df_concs2.to_csv(),file_name='Concs.csv')
