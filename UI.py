@@ -234,7 +234,7 @@ if batch_file is not None:
     with sample_tab:
         st.header('Raw concentrations without correction')
         st.dataframe(df_concs)
-        st.download_button('Download template for dilution factor', data=df_concs.to_csv(), file_name='Concs.csv')
+        st.download_button('Download template for dilution factor', data=df_concs.to_csv(), file_name='dilution factors.csv')
     df_concs2 = df_concs*pd.read_csv(dilution_file,index_col='Points')
     with sample_tab:
         st.header('With dilution factor correction')
