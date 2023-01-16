@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 #%%
 
 st.title('LC-MS/MS Peak Table Processing')
+with st.sidebar:
+    st.file_uploader('Dilution factors')
 
 # with st.sidebar:
 #     demo = st.checkbox('Demo mode',value=True)
@@ -90,7 +92,11 @@ def process_file(file):
     df_formatted = pd.DataFrame(dict_formatted)
 
     df_formatted.set_index('Points',inplace=True)
+    # with sample_tab:
+    #     st.dataframe(df_formatted)
     df = df_formatted[df_formatted.columns[list(~df_formatted.columns.str.contains('qualifier',case=False))]]
+    # with sample_tab:
+    #     st.dataframe(df)
     df = df.replace('-----',None)
 
     df = df.astype(float)
@@ -98,31 +104,33 @@ def process_file(file):
 
 
 
-    ISTD_dict = {'PFBA':'MPFBA','PFPeA':'MPFPeA','PFBS':'MPFBS','42FTS':'M42FTS','PFHxA':'MPFHxA','PFHpA':'MPFHpA','PFHxS':'MPFHxS'}
 
-
-
-    def ISTD_map(data,map,use_name=True):
-        df = pd.DataFrame()
-        if use_name:
-            for c_key in map.keys():
-                df[c_key] = data[c_key]/data[map[c_key]]
-        else:
-            for c_key in map.keys():
-                df[c_key+'/'+map[c_key]] = data[c_key]/data[map[c_key]]
-        return df
-
-    df_normalized = ISTD_map(df,ISTD_dict)
-
-    df_normalized.to_csv('Calib areas.csv')
     return df
+
+ISTD_dict = {'PFBA':'MPFBA','PFPeA':'MPFPeA','PFBS':'MPFBS','42FTS':'M42FTS','PFHxA':'MPFHxA','PFHpA':'MPFHpA','PFHxS':'MPFHxS','62FTS':'M62FTS','PFOA':'MPFOA','PFNA':'MPFNA','PFOS':'MPFOS','82FTS':'M82FTS','PFDA':'MPFDA','MeFOSAA':'M-MeFOSAA','FOSA':'M-FOSA','EtFOSAA':'M-EtFOSAA','PFUdA':'MPFUdA','PFDoA':'MPFDoA','PFTeDA':'MPFTeDA'}
+
+def ISTD_map(data,map,use_name=True):
+    df = pd.DataFrame()
+    if use_name:
+        for c_key in map.keys():
+            df[c_key] = data[c_key]/data[map[c_key]]
+    else:
+        for c_key in map.keys():
+            df[c_key+'/'+map[c_key]] = data[c_key]/data[map[c_key]]
+    return df
+
+
+
+
 
 def process_calib(df):
     df_concs = pd.read_csv('Calib concs.csv', index_col='Points')
     #%%
     from core import sample
     ISTD_dict = {'PFBA': 'MPFBA', 'PFPeA': 'MPFPeA', 'PFBS': 'MPFBS', '42FTS': 'M42FTS', 'PFHxA': 'MPFHxA',
-                 'PFHpA': 'MPFHpA', 'PFHxS': 'MPFHxS'}
+                 'PFHpA': 'MPFHpA', 'PFHxS': 'MPFHxS', '62FTS': 'M62FTS', 'PFOA': 'MPFOA', 'PFNA': 'MPFNA',
+                 'PFOS': 'MPFOS', '82FTS': 'M82FTS', 'PFDA': 'MPFDA', 'MeFOSAA': 'M-MeFOSAA', 'FOSA': 'M-FOSA',
+                 'EtFOSAA': 'M-EtFOSAA', 'PFUdA': 'MPFUdA', 'PFDoA': 'MPFDoA', 'PFTeDA': 'MPFTeDA'}
     calib_set = []
 
     for compound in ISTD_dict.keys():
@@ -180,11 +188,10 @@ with sample_tab:
     batch_file = st.file_uploader('Upload sample peak table')
 
 def process_sample(df,calib):
-    df_concs = pd.read_csv('Calib concs.csv', index_col='Points')
-    #%%
 
-    ISTD_dict = {'PFBA': 'MPFBA', 'PFPeA': 'MPFPeA', 'PFBS': 'MPFBS', '42FTS': 'M42FTS', 'PFHxA': 'MPFHxA',
-                 'PFHpA': 'MPFHpA', 'PFHxS': 'MPFHxS'}
+    #%%
+    df_concs = pd.read_csv('Calib concs.csv', index_col='Points')
+
     sample_set = {}
 
     for compound in ISTD_dict.keys():
@@ -213,12 +220,19 @@ def make_sample_df(sample_set):
     sample_df.set_index('Points',inplace=True)
     return sample_df
 
+def apply_dilution_factor(df,df_dilute):
+    df*df_dilute
+    return df
+
+
 if batch_file is not None:
     samples_set = process_file(batch_file)
     p_samples = process_sample(samples_set,calibrated)
     df_concs = make_sample_df(p_samples)
-    st.dataframe(df_concs)
-    st.download_button('Download results',data=df_concs.to_csv(),file_name='Concs.csv')
+    df_concs2 = df_concs*pd.read_csv('dilution_factors.csv',index_col='Points')
+    with sample_tab:
+        st.dataframe(df_concs2)
+    st.download_button('Download results',data=df_concs2.to_csv(),file_name='Concs.csv')
 else:
     st.stop()
 
