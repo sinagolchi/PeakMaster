@@ -97,9 +97,7 @@ def process_file(file):
     df = df_formatted[df_formatted.columns[list(~df_formatted.columns.str.contains('qualifier',case=False))]]
     # with sample_tab:
     #     st.dataframe(df)
-    df = df.replace('-----',0)
 
-    df = df.astype(float)
     #st.dataframe(df)
 
 
@@ -124,6 +122,8 @@ def ISTD_map(data,map,use_name=True):
 
 
 def process_calib(df):
+    df = df.replace('-----',0)
+    df = df.astype(float)
     df_concs = pd.read_csv('Calib concs.csv', index_col='Points')
     #%%
     from core import sample
@@ -192,6 +192,8 @@ def process_sample(df,calib):
     #%%
     df_concs = pd.read_csv('Calib concs.csv', index_col='Points')
 
+    df = df.replace('-----',None)
+    df = df.astype(float)
     sample_set = {}
 
     for compound in ISTD_dict.keys():
