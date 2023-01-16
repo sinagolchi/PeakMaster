@@ -97,7 +97,7 @@ def process_file(file):
     df = df_formatted[df_formatted.columns[list(~df_formatted.columns.str.contains('qualifier',case=False))]]
     # with sample_tab:
     #     st.dataframe(df)
-    df = df.replace('-----',None)
+    df = df.replace('-----',0)
 
     df = df.astype(float)
     #st.dataframe(df)
