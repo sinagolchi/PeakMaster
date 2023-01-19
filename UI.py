@@ -193,9 +193,9 @@ with calib_tab:
     comp_select = st.selectbox('select compound for preview',options=[c for c in calibrated.keys()])
     st.pyplot(calibrated[comp_select].plot())
     st.download_button('Download calibration file', data=pickle.dumps(calibrated), file_name='calib.cal')
-    df_calib_result = pd.DataFrame({'Compounds': calibrated.keys(), 'Slope': [c.slope for c in calibrated.values()],
+    df_calib_result = pd.DataFrame({ 'Slope': [c.slope for c in calibrated.values()],
                                     'Intercept': [c.intercept for c in calibrated.values()],
-                                    'R^2': [c.r_squared for c in calibrated.values()]})
+                                    'R^2': [c.r_squared for c in calibrated.values()]},index=calibrated.keys())
     #st.dataframe(df_calib_result)
     st.download_button('Download calibration results', data=df_calib_result.to_csv(), file_name='calib_results.csv')
     for comp in calibrated.keys():
