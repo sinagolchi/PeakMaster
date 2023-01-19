@@ -149,15 +149,29 @@ def load_calibration(uploaded_file):
 def review_calib(calibset):
     with calib_tab:
         intercept = st.checkbox('Do not fit Intercept (Force through zero)')
-        outliers = st.multiselect('Outliers', options=[c.name for c in calibset[0]])
+        with st.sidebar:
+            enable_outlier = st.checkbox('Select outliers to drop?')
+            outlier_dict = {}
 
-    calib_set = [[c for c in lst if c.name not in outliers] for lst in calibset]
+            for comp in ISTD_dict.keys():
+                if enable_outlier:
+                    with st.expander(comp):
+                        outlier_dict.update({comp:st.multiselect(comp+' outliers', options=[c.name for c in calibset[0]])})
+                else:
+                    with st.expander(comp):
+                        outlier_dict.update({comp:[]})
+        #outliers = st.multiselect('Outliers', options=[c.name for c in calibset[0]])
+
+    calib_set = [[c for c in lst if c.name not in outlier_dict[c.comp]] for lst in calibset]
     from core import calibration
 
     calibrated = {}
     for calib in calib_set:
         calibrated.update({calib[0].comp: calibration(calib, True, split=False, split_point=500, intercept=not intercept)})
+
+    df_calib_result = pd.DataFrame({'Compounds':calibrated.keys(),'Slope':[c.slope for c in calibrated.values()],'Intercept':[c.intercept for c in calibrated.values()],'R^2':[c.r_squared for c in calibrated.values()]})
     return calibrated
+
 
 if file is not None:
     calib_df = process_file(file)
@@ -178,8 +192,16 @@ else:
 with calib_tab:
     comp_select = st.selectbox('select compound for preview',options=[c for c in calibrated.keys()])
     st.pyplot(calibrated[comp_select].plot())
-
     st.download_button('Download calibration file', data=pickle.dumps(calibrated), file_name='calib.cal')
+    df_calib_result = pd.DataFrame({'Compounds': calibrated.keys(), 'Slope': [c.slope for c in calibrated.values()],
+                                    'Intercept': [c.intercept for c in calibrated.values()],
+                                    'R^2': [c.r_squared for c in calibrated.values()]})
+    #st.dataframe(df_calib_result)
+    st.download_button('Download calibration results', data=df_calib_result.to_csv(), file_name='calib_results.csv')
+    for comp in calibrated.keys():
+        if calibrated[comp].r_squared < 0.95:
+            st.warning(f'{comp} calibration R^2 is less than 0.95')
+
 
 
 #%%
